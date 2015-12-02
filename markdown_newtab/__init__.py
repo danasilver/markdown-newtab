@@ -17,7 +17,8 @@ from markdown.inlinepatterns import \
 class NewTabMixin(object):
 	def handleMatch(self, m):
 		el = super(NewTabMixin, self).handleMatch(m)
-		if el != None: el.set('target', '_blank')
+		if el is not None and not el.get('href').startswith('#'):
+			el.set('target', '_blank')
 		return el
 
 class NewTabLinkPattern(     NewTabMixin, LinkPattern):      pass
