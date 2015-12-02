@@ -13,9 +13,11 @@ class TestNewTab(TestCase):
 	def test_link(self):
 		self.assertEqualMarkdown("""\
 [one](https://ddg.gg) \
-[two](https://duck.co "test")""", """\
+[two](https://duck.co "test") \
+[three](#section_1)""", """\
 <p><a href="https://ddg.gg" target="_blank">one</a> \
-<a href="https://duck.co" target="_blank" title="test">two</a></p>""")
+<a href="https://duck.co" target="_blank" title="test">two</a> \
+<a href="#section_1">three</a></p>""")
 
 	def test_reference(self):
 		self.assertEqualMarkdown("""\
