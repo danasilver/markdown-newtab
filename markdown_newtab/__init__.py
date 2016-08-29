@@ -16,11 +16,12 @@ from markdown.inlinepatterns import \
 
 # pylint: disable=invalid-name, too-few-public-methods
 class NewTabMixin(object):
+    """Common extension logic; mixed into the existing classes."""
+
     def __init__(self, *args, **kwargs):
         self.config = kwargs.pop('config')
         super(NewTabMixin, self).__init__(*args, **kwargs)
 
-    """Common extension logic; mixed into the existing classes."""
     def handleMatch(self, match):
         """Handles a match on a pattern; used by existing implementation."""
         elem = super(NewTabMixin, self).handleMatch(match)
@@ -59,11 +60,12 @@ class NewTabAutomailPattern(NewTabMixin, AutomailPattern):
 
 
 class NewTabExtension(Extension):
+    """Modifies HTML output to open links in a new tab."""
+
     def __init__(self, **kwargs):
-        self.config = {'external_only': [False, 'Only add `target="blank"` to external links.']}
+        self.config = {'external_only': [False, 'Only modify external links.']}
         super(NewTabExtension, self).__init__(**kwargs)
 
-    """Modifies HTML output to open links in a new tab."""
     def extendMarkdown(self, md, md_globals):
         md.inlinePatterns['link'] = \
             NewTabLinkPattern(LINK_RE, md, config=self.config)
