@@ -16,12 +16,25 @@ from markdown.inlinepatterns import \
 
 # pylint: disable=invalid-name, too-few-public-methods
 class NewTabMixin(object):
+    def __init__(self, *args, **kwargs):
+        self.config = kwargs.pop('config')
+        super(NewTabMixin, self).__init__(*args, **kwargs)
+
     """Common extension logic; mixed into the existing classes."""
     def handleMatch(self, match):
         """Handles a match on a pattern; used by existing implementation."""
         elem = super(NewTabMixin, self).handleMatch(match)
-        if elem is not None and not elem.get('href').startswith('#'):
+        match_conditions = [
+            lambda: elem is not None,
+            lambda: not elem.get('href').startswith('#'),
+        ]
+
+        if self.config.get('external_only')[0]:
+            match_conditions.append(lambda: 'http' in elem.get('href'))
+
+        if all([condition() for condition in match_conditions]):
             elem.set('target', '_blank')
+
         return elem
 
 
@@ -36,32 +49,34 @@ class NewTabReferencePattern(NewTabMixin, ReferencePattern):
 
 
 class NewTabAutolinkPattern(NewTabMixin, AutolinkPattern):
-    """Autommatic links, e.g. <duck.co>."""
+    """Automatic links, e.g. <duck.co>."""
     pass
 
 
 class NewTabAutomailPattern(NewTabMixin, AutomailPattern):
-    """Autommatic links, e.g. <address@example.com>."""
+    """Automatic links, e.g. <address@example.com>."""
     pass
 
 
 class NewTabExtension(Extension):
+    def __init__(self, **kwargs):
+        self.config = {'external_only': [False, 'Only add `target="blank"` to external links.']}
+        super(NewTabExtension, self).__init__(**kwargs)
+
     """Modifies HTML output to open links in a new tab."""
     def extendMarkdown(self, md, md_globals):
         md.inlinePatterns['link'] = \
-            NewTabLinkPattern(LINK_RE, md)
+            NewTabLinkPattern(LINK_RE, md, config=self.config)
         md.inlinePatterns['reference'] = \
-            NewTabReferencePattern(REFERENCE_RE, md)
+            NewTabReferencePattern(REFERENCE_RE, md, config=self.config)
         md.inlinePatterns['short_reference'] = \
-            NewTabReferencePattern(SHORT_REF_RE, md)
+            NewTabReferencePattern(SHORT_REF_RE, md, config=self.config)
         md.inlinePatterns['autolink'] = \
-            NewTabAutolinkPattern(AUTOLINK_RE, md)
+            NewTabAutolinkPattern(AUTOLINK_RE, md, config=self.config)
         md.inlinePatterns['automail'] = \
-            NewTabAutomailPattern(AUTOMAIL_RE, md)
+            NewTabAutomailPattern(AUTOMAIL_RE, md, config=self.config)
 
 
-def makeExtension(configs=None):
+def makeExtension(**kwargs):
     """Loads the extension."""
-    if configs is None:
-        configs = {}
-    return NewTabExtension(configs=configs)
+    return NewTabExtension(**kwargs)

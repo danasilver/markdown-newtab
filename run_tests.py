@@ -139,6 +139,20 @@ class TestNewTab(TestCase):
 &#101;&#120;&#97;&#109;&#112;&#108;&#101;&#46;&#99;&#111;&#109;</a></p>"""
         )
 
+    def test_external_only(self):
+        md = Markdown(extensions=[NewTabExtension(external_only=True)])
+        markdown = """[external link](http://ddg.gg)"""
+        expected = """\
+<p><a href="http://ddg.gg" target="_blank">external link</a></p>"""
+        self.assertEqual(md.convert(markdown), expected)
+
+    def test_external_only_internal_link(self):
+        md = Markdown(extensions=[NewTabExtension(external_only=True)])
+        markdown = """[internal link](/internal)"""
+        expected = """\
+<p><a href="/internal">internal link</a></p>"""
+        self.assertEqual(md.convert(markdown), expected)
+
 
 if __name__ == '__main__':
     main()
