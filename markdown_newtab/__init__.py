@@ -25,15 +25,16 @@ class NewTabMixin(object):
     def handleMatch(self, match):
         """Handles a match on a pattern; used by existing implementation."""
         elem = super(NewTabMixin, self).handleMatch(match)
-        match_conditions = [
-            lambda: elem is not None,
-            lambda: not elem.get('href').startswith('#'),
-        ]
+
+        if elem is None:
+            return elem
+
+        match_conditions = [not elem.get('href').startswith('#')]
 
         if self.config.get('external_only')[0]:
-            match_conditions.append(lambda: 'http' in elem.get('href'))
+            match_conditions.append('http' in elem.get('href'))
 
-        if all([condition() for condition in match_conditions]):
+        if all(match_conditions):
             elem.set('target', '_blank')
 
         return elem
